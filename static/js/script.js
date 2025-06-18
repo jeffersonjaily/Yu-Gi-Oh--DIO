@@ -44,16 +44,19 @@ let enemyDeckCount = 60;
 let currentTurn = 'player';
 
 let selectedPlayerCardIndex = null;
+let selectedEnemyCardIndex = null;
 let attackModeActive = false;
 
 // -----------------------------
 // Funções auxiliares
 // -----------------------------
 
+// Log no console do jogo
 function log(text) {
   logElem.textContent = text;
 }
 
+// Embaralha um array (Fisher-Yates)
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -61,11 +64,13 @@ function shuffle(array) {
   }
 }
 
+// Atualiza contagem de cartas restantes nos decks
 function updateDeckCount() {
   playerDeckCountElem.textContent = playerDeckCount;
   enemyDeckCountElem.textContent = enemyDeckCount;
 }
 
+// Atualiza a exibição dos Pontos de Vida e barras
 function updateLP() {
   playerLPElem.textContent = playerLP;
   enemyLPElem.textContent = enemyLP;
@@ -74,6 +79,7 @@ function updateLP() {
   enemyBarElem.style.width = `${(enemyLP / MAX_LP) * 100}%`;
 }
 
+// Zoom visual para as cartas clicadas
 function zoomCard(img) {
   img.classList.add("card-zoomed");
   setTimeout(() => {
@@ -85,6 +91,7 @@ function zoomCard(img) {
 // Funções de jogo
 // -----------------------------
 
+// Comprar carta do deck para a mão
 function drawCard(hand, deck, isPlayer = true) {
   if (hand.length >= MAX_HAND_SIZE || deck.length === 0) return false;
 
@@ -97,7 +104,7 @@ function drawCard(hand, deck, isPlayer = true) {
       playerLP = 0;
       log("Você tentou comprar carta e perdeu por falta de cartas no deck!");
       disableButtons();
-      return true;
+      return true; 
     }
   } else {
     enemyDeckCount--;
@@ -113,6 +120,7 @@ function drawCard(hand, deck, isPlayer = true) {
   return true;
 }
 
+// Coloca carta da mão para o campo (modo ataque por padrão)
 function playCard(hand, field, isPlayer = true) {
   if (hand.length === 0 || field.length >= MAX_FIELD_SIZE) return false;
 
@@ -123,6 +131,7 @@ function playCard(hand, field, isPlayer = true) {
   return true;
 }
 
+// Renderiza cartas no campo (com visual diferente para inimigo)
 function renderField(field, container, isEnemy = false) {
   container.innerHTML = "";
 
@@ -185,6 +194,7 @@ function renderField(field, container, isEnemy = false) {
   });
 }
 
+// Executa o ataque entre cartas ou ataque direto
 function executeAttack(attacker, defender, attackerField, defenderField, attackerIsPlayer) {
   if (!defender) {
     const damage = attacker.atk;
@@ -253,6 +263,7 @@ function executeAttack(attacker, defender, attackerField, defenderField, attacke
   }
 }
 
+// Verifica vitória e finaliza o jogo se necessário
 function checkVictory() {
   if (playerLP <= 0) {
     log("Você perdeu o duelo!");
@@ -271,6 +282,7 @@ function checkVictory() {
 // Turnos e ações
 // -----------------------------
 
+// Turno inimigo: comprar carta, jogar, atacar
 async function enemyTurn() {
   log("Turno do inimigo...");
   drawCard(enemyHand, enemyDeck, false);
@@ -295,6 +307,7 @@ async function enemyTurn() {
   }
 }
 
+// Passar turno (botão)
 passTurnBtn.onclick = () => {
   if (currentTurn !== 'player') return;
 
@@ -304,6 +317,10 @@ passTurnBtn.onclick = () => {
 
   setTimeout(enemyTurn, 500);
 };
+
+// -----------------------------
+// Botões do jogador
+// -----------------------------
 
 drawCardBtn.onclick = () => {
   if (currentTurn !== 'player') return;
@@ -346,27 +363,29 @@ discardCardBtn.onclick = () => {
   disablePlayerActionButtons();
 };
 
+// Habilita botões de ação para o jogador (quando uma carta está selecionada)
 function enablePlayerActionButtons() {
   attackBtn.disabled = false;
   defenseBtn.disabled = false;
   discardCardBtn.disabled = false;
 }
 
+// Desabilita botões de ação do jogador (quando nenhuma carta está selecionada ou durante ataque)
 function disablePlayerActionButtons() {
   attackBtn.disabled = true;
   defenseBtn.disabled = true;
   discardCardBtn.disabled = true;
 }
 
+// Desabilita todos os botões do jogador
 function disableButtons() {
   drawCardBtn.disabled = true;
   disablePlayerActionButtons();
-  passTurnBtn.disabled = true;
 }
 
+// Habilita botões do jogador, porém desabilita ação enquanto nenhuma carta selecionada
 function enableButtons() {
   drawCardBtn.disabled = false;
-  passTurnBtn.disabled = false;
   attackBtn.disabled = true;
   defenseBtn.disabled = true;
   discardCardBtn.disabled = true;

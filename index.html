@@ -3,12 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Yu-Gi-Oh! RPG - Batalha</title>
-
-  <!-- RPGUI CSS -->
-  <link rel="stylesheet" href="../static/css/rpgui.min.css" />
-
-  <!-- Seu CSS personalizado -->
-  <link rel="stylesheet" href="../static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body class="rpgui-content">
 
@@ -28,6 +23,9 @@
         <div class="rpgui-progress-track"></div>
         <div class="rpgui-progress-fill" id="enemy-bar" style="width: 100%;"></div>
       </div>
+
+      <!-- Zona Spells/Traps inimigo -->
+      <div class="rpgui-container framed" id="enemy-spell-trap-zone" style="margin-top:10px;"></div>
     </div>
 
     <!-- Campo do jogador -->
@@ -42,7 +40,10 @@
         <div class="rpgui-progress-fill" id="player-bar" style="width: 100%;"></div>
       </div>
 
-      <div class="rpgui-container framed" id="player-field"></div>
+      <div class="rpgui-container framed" id="player-field" style="margin-top:10px;"></div>
+
+      <!-- Zona Spells/Traps jogador -->
+      <div class="rpgui-container framed" id="player-spell-trap-zone" style="margin-top:10px;"></div>
     </div>
 
     <!-- Ações -->
@@ -52,14 +53,11 @@
       <button class="rpgui-button" id="pass-turn">Passar Turno</button>
       <button class="rpgui-button" id="discard-card">Descartar Carta</button>
       <button class="rpgui-button" id="defense" disabled>Defender</button>
+      <button class="rpgui-button" id="fuse">Fundir</button>
       <p id="log" class="rpgui-textbox"></p>
     </div>
   </div>
 
-  <!-- RPGUI JS -->
-  <script src="../static/js/rpgui.min.js"></script>
-
-  <!-- Seu JS personalizado -->
-  <script src="../static/js/script.js"></script>
+  <script type="module" src="static/js/script.js"></script>
 </body>
 </html>
