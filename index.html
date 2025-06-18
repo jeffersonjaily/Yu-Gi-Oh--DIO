@@ -5,10 +5,10 @@
   <title>Yu-Gi-Oh! RPG - Batalha</title>
 
   <!-- RPGUI CSS -->
-  <link rel="stylesheet" href="css/rpgui.min.css" />
+  <link rel="stylesheet" href="../static/css/rpgui.min.css" />
 
-  <!-- Seu CSS -->
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <!-- Seu CSS personalizado -->
+  <link rel="stylesheet" href="../static/css/style.css" />
 </head>
 <body class="rpgui-content">
 
@@ -16,43 +16,50 @@
     <h1 class="rpgui-title">Modo Batalha - Yu-Gi-Oh!</h1>
 
     <!-- Campo e LPs do oponente -->
-<div style="text-align: center; margin-bottom: 10px;">
-  <div class="rpgui-container framed" id="enemy-field" style="width: 100%; min-height: 220px; display: flex; justify-content: center; gap: 15px;"></div>
-  <h3>Oponente - LP: <span id="enemy-lp">8000</span></h3>
-  <div class="rpgui-progress red" style="width: 200px; margin: auto;">
-    <div class="rpgui-progress-track"></div>
-    <div class="rpgui-progress-fill" id="enemy-bar" style="width: 100%;"></div>
-  </div>
-</div>
+    <div style="text-align: center; margin-bottom: 10px;">
+      <div class="rpgui-container framed" id="enemy-field"></div>
+      
+      <div class="lp-info">
+        <div><span class="label">LP:</span> <span id="enemy-lp" class="value">8000</span></div>
+        <div><span class="label">Cartas:</span> <span id="enemy-deck-count" class="value">60</span></div>
+      </div>
 
-<!-- Campo do jogador -->
-<div style="text-align: center; margin-top: 20px;">
-  <h3>Você - LP: <span id="player-lp">8000</span></h3>
-  <div class="rpgui-progress green" style="width: 200px; margin: auto;">
-    <div class="rpgui-progress-track"></div>
-    <div class="rpgui-progress-fill" id="player-bar" style="width: 100%;"></div>
-  </div>
-  <div class="rpgui-container framed" id="player-field" style="width: 100%; min-height: 220px; display: flex; justify-content: center; gap: 15px; margin-top: 10px;"></div>
-</div>
+      <div class="rpgui-progress red" style="width: 200px; margin: auto;">
+        <div class="rpgui-progress-track"></div>
+        <div class="rpgui-progress-fill" id="enemy-bar" style="width: 100%;"></div>
+      </div>
+    </div>
 
+    <!-- Campo do jogador -->
+    <div style="text-align: center; margin-top: 20px;">
+      <div class="lp-info">
+        <div><span class="label">LP:</span> <span id="player-lp" class="value">8000</span></div>
+        <div><span class="label">Cartas:</span> <span id="player-deck-count" class="value">60</span></div>
+      </div>
+
+      <div class="rpgui-progress green" style="width: 200px; margin: auto;">
+        <div class="rpgui-progress-track"></div>
+        <div class="rpgui-progress-fill" id="player-bar" style="width: 100%;"></div>
+      </div>
+
+      <div class="rpgui-container framed" id="player-field"></div>
+    </div>
 
     <!-- Ações -->
     <div class="rpgui-container framed-grey" style="margin-top: 20px; text-align: center;">
       <button class="rpgui-button" id="draw-card">Comprar Carta</button>
-    <button class="rpgui-button" id="attack">Atacar</button>
+      <button class="rpgui-button" id="attack">Atacar</button>
       <button class="rpgui-button" id="pass-turn">Passar Turno</button>
       <button class="rpgui-button" id="discard-card">Descartar Carta</button>
-    <button class="rpgui-button" id="attack">Atacar</button>
-    <button class="rpgui-button" id="defense" disabled>Defender</button>
-      <p id="log" class="rpgui-textbox" style="height: 120px; overflow-y: auto; white-space: pre-wrap; text-align: left;"></p>
+      <button class="rpgui-button" id="defense" disabled>Defender</button>
+      <p id="log" class="rpgui-textbox"></p>
     </div>
   </div>
-  
 
   <!-- RPGUI JS -->
-  <script src="js/rpgui.min.js"></script>
+  <script src="../static/js/rpgui.min.js"></script>
 
-  <!-- Seu JS -->
-  <script src="/static/js/script.js"></script>
+  <!-- Seu JS personalizado -->
+  <script src="../static/js/script.js"></script>
 </body>
 </html>

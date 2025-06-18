@@ -1,22 +1,30 @@
+// Constantes e elementos DOM
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?type=normal%20monster';
 
 const playerFieldDiv = document.getElementById("player-field");
 const enemyFieldDiv = document.getElementById("enemy-field");
 const logElem = document.getElementById("log");
+
 const playerLPElem = document.getElementById("player-lp");
 const playerBarElem = document.getElementById("player-bar");
 const enemyLPElem = document.getElementById("enemy-lp");
 const enemyBarElem = document.getElementById("enemy-bar");
+
+const playerDeckCountElem = document.getElementById("player-deck-count");
+const enemyDeckCountElem = document.getElementById("enemy-deck-count");
+
 const drawCardBtn = document.getElementById("draw-card");
 const attackBtn = document.getElementById("attack");
-const defenseBtn = document.getElementById("defense"); // botão Defend - adicionar no HTML
+const defenseBtn = document.getElementById("defense");
 const discardCardBtn = document.getElementById("discard-card");
+const passTurnBtn = document.getElementById("pass-turn");
 
 const MAX_HAND_SIZE = 5;
 const MAX_FIELD_SIZE = 5;
 const MAX_LP = 8000;
 const cardBackImage = 'static/img/fundo-cartas.jpg';
 
+// Variáveis de estado do jogo
 let deck = [];
 let playerDeck = [];
 let enemyDeck = [];
@@ -26,14 +34,21 @@ let playerField = [];
 let enemyField = [];
 let playerGraveyard = [];
 let enemyGraveyard = [];
+
 let playerLP = MAX_LP;
 let enemyLP = MAX_LP;
+
+let playerDeckCount = 60;
+let enemyDeckCount = 60;
+
 let currentTurn = 'player';
 
 let selectedPlayerCardIndex = null;
-let selectedEnemyCardIndex = null;
+let attackModeActive = false;
 
-let attackModeActive = false; // true quando clicou em atacar aguardando carta inimiga
+// -----------------------------
+// Funções auxiliares
+// -----------------------------
 
 function log(text) {
   logElem.textContent = text;
@@ -46,116 +61,196 @@ function shuffle(array) {
   }
 }
 
-function playCard(hand, field, isPlayer = true) {
-  if (hand.length === 0 || field.length >= MAX_FIELD_SIZE) return false;
-  const card = hand.shift();
-  if (isPlayer) {
-    card.mode = "attack"; // padrão ao jogar a carta
-  }
-  field.push(card);
-  return card;
+function updateDeckCount() {
+  playerDeckCountElem.textContent = playerDeckCount;
+  enemyDeckCountElem.textContent = enemyDeckCount;
 }
 
 function updateLP() {
   playerLPElem.textContent = playerLP;
   enemyLPElem.textContent = enemyLP;
+
   playerBarElem.style.width = `${(playerLP / MAX_LP) * 100}%`;
   enemyBarElem.style.width = `${(enemyLP / MAX_LP) * 100}%`;
 }
 
+function zoomCard(img) {
+  img.classList.add("card-zoomed");
+  setTimeout(() => {
+    img.classList.remove("card-zoomed");
+  }, 700);
+}
+
+// -----------------------------
+// Funções de jogo
+// -----------------------------
+
+function drawCard(hand, deck, isPlayer = true) {
+  if (hand.length >= MAX_HAND_SIZE || deck.length === 0) return false;
+
+  const card = deck.shift();
+  hand.push(card);
+
+  if (isPlayer) {
+    playerDeckCount--;
+    if (playerDeckCount < 0) {
+      playerLP = 0;
+      log("Você tentou comprar carta e perdeu por falta de cartas no deck!");
+      disableButtons();
+      return true;
+    }
+  } else {
+    enemyDeckCount--;
+    if (enemyDeckCount < 0) {
+      enemyLP = 0;
+      log("Inimigo perdeu por falta de cartas no deck!");
+      disableButtons();
+      return true;
+    }
+  }
+
+  updateDeckCount();
+  return true;
+}
+
+function playCard(hand, field, isPlayer = true) {
+  if (hand.length === 0 || field.length >= MAX_FIELD_SIZE) return false;
+
+  const card = hand.shift();
+  if (isPlayer) card.mode = "attack";
+
+  field.push(card);
+  return true;
+}
+
 function renderField(field, container, isEnemy = false) {
   container.innerHTML = "";
+
   field.forEach((card, index) => {
     const img = document.createElement("img");
+    img.src = (isEnemy && !attackModeActive) ? cardBackImage : card.card_images[0].image_url;
+    img.title = `${card.name}\nATK: ${card.atk} / DEF: ${card.def}\nModo: ${card.mode || "attack"}`;
+    img.style.cursor = "pointer";
+    img.classList.remove("card-zoomed");
 
     if (isEnemy) {
-      // mostrar carta inimiga de acordo com situação:
-      if (attackModeActive) {
-        // revelar carta inimiga durante modo ataque para selecionar
-        img.src = card.card_images[0].image_url;
-        img.title = `${card.name}\nATK: ${card.atk} / DEF: ${card.def}\nModo: ${card.mode || "attack"}`;
-        img.style.cursor = "pointer";
+      img.onclick = () => {
+        if (currentTurn !== 'player' || !attackModeActive || selectedPlayerCardIndex === null) return;
 
-        img.onclick = () => {
-          if (currentTurn !== 'player' || !attackModeActive) return;
+        const attacker = playerField[selectedPlayerCardIndex];
+        const defender = enemyField[index];
 
-          const attacker = playerField[selectedPlayerCardIndex];
-          const defender = enemyField[index];
+        zoomCard(img);
+        zoomCard(playerFieldDiv.querySelectorAll("img")[selectedPlayerCardIndex]);
 
+        setTimeout(() => {
           executeAttack(attacker, defender, playerField, enemyField, true);
-
           attackModeActive = false;
           selectedPlayerCardIndex = null;
-
-          attackBtn.disabled = true;
-          defenseBtn.disabled = true;
-
+          disablePlayerActionButtons();
           renderField(playerField, playerFieldDiv, false);
           renderField(enemyField, enemyFieldDiv, true);
           updateLP();
 
-          if (checkVictory()) return;
-
-          currentTurn = 'enemy';
-          disableButtons();
-          setTimeout(enemyTurn, 1500);
-          log("Turno inimigo...");
-        };
-      } else {
-        // carta inimiga oculta (quando não estiver em modo ataque)
-        img.src = cardBackImage;
-        img.title = "Carta inimiga oculta";
-        img.style.cursor = "default";
-      }
+          if (!checkVictory()) {
+            currentTurn = 'enemy';
+            disableButtons();
+            setTimeout(enemyTurn, 1500);
+            log("Turno inimigo...");
+          }
+        }, 800);
+      };
     } else {
-      // cartas do jogador
-      img.src = card.card_images[0].image_url;
-      img.title = `${card.name}\nATK: ${card.atk} / DEF: ${card.def}\nModo: ${card.mode || "attack"}`;
-      img.style.cursor = "pointer";
-
       img.onclick = () => {
         if (currentTurn !== 'player' || attackModeActive) return;
 
         if (selectedPlayerCardIndex === index) {
-          // deselecionar
           selectedPlayerCardIndex = null;
-          attackBtn.disabled = true;
-          defenseBtn.disabled = true;
+          disablePlayerActionButtons();
           log("Nenhuma carta selecionada.");
         } else {
           selectedPlayerCardIndex = index;
-          attackBtn.disabled = false;
-          defenseBtn.disabled = false;
-          log(`Carta ${card.name} selecionada. Escolha Atacar ou Defender.`);
+          enablePlayerActionButtons();
+          log(`Carta ${card.name} selecionada. Escolha Atacar, Defender ou Descartar.`);
         }
         renderField(playerField, playerFieldDiv, false);
       };
     }
 
-    if (!isEnemy && selectedPlayerCardIndex === index) img.classList.add("selected");
+    if (!isEnemy && selectedPlayerCardIndex === index) {
+      img.classList.add("selected");
+    }
+
     container.appendChild(img);
   });
 }
 
-function drawCard(hand, deck) {
-  if (hand.length >= MAX_HAND_SIZE || deck.length === 0) return null;
-  const card = deck.shift();
-  hand.push(card);
-  return card;
-}
+function executeAttack(attacker, defender, attackerField, defenderField, attackerIsPlayer) {
+  if (!defender) {
+    const damage = attacker.atk;
+    if (attackerIsPlayer) {
+      enemyLP = Math.max(0, enemyLP - damage);
+      log(`Você atacou diretamente e causou ${damage} de dano.`);
+    } else {
+      playerLP = Math.max(0, playerLP - damage);
+      log(`Inimigo atacou diretamente e causou ${damage} de dano.`);
+    }
+    return;
+  }
 
-function disableButtons() {
-  drawCardBtn.disabled = true;
-  attackBtn.disabled = true;
-  defenseBtn.disabled = true;
-  discardCardBtn.disabled = true;
-}
-
-function enableButtons() {
-  drawCardBtn.disabled = false;
-  attackBtn.disabled = selectedPlayerCardIndex !== null;
-  defenseBtn.disabled = selectedPlayerCardIndex !== null;
-  discardCardBtn.disabled = true; // só habilitar quando quiser
+  if (defender.mode === "defense") {
+    if (attacker.atk > defender.def) {
+      const damage = attacker.atk - defender.def;
+      defenderField.splice(defenderField.indexOf(defender), 1);
+      if (attackerIsPlayer) {
+        enemyLP = Math.max(0, enemyLP - damage);
+        log(`Você destruiu ${defender.name} em defesa e causou ${damage} de dano.`);
+      } else {
+        playerLP = Math.max(0, playerLP - damage);
+        log(`Inimigo destruiu ${defender.name} em defesa e causou ${damage} de dano.`);
+      }
+    } else if (attacker.atk < defender.def) {
+      const damage = defender.def - attacker.atk;
+      attackerField.splice(attackerField.indexOf(attacker), 1);
+      if (attackerIsPlayer) {
+        playerLP = Math.max(0, playerLP - damage);
+        log(`Você perdeu o ataque e recebeu ${damage} de dano.`);
+      } else {
+        enemyLP = Math.max(0, enemyLP - damage);
+        log(`Inimigo perdeu o ataque e recebeu ${damage} de dano.`);
+      }
+    } else {
+      defenderField.splice(defenderField.indexOf(defender), 1);
+      attackerField.splice(attackerField.indexOf(attacker), 1);
+      log("Empate! Ambas as cartas foram destruídas.");
+    }
+  } else {
+    if (attacker.atk > defender.atk) {
+      const damage = attacker.atk - defender.atk;
+      defenderField.splice(defenderField.indexOf(defender), 1);
+      if (attackerIsPlayer) {
+        enemyLP = Math.max(0, enemyLP - damage);
+        log(`Você destruiu ${defender.name} e causou ${damage} de dano.`);
+      } else {
+        playerLP = Math.max(0, playerLP - damage);
+        log(`Inimigo destruiu ${defender.name} e causou ${damage} de dano.`);
+      }
+    } else if (attacker.atk < defender.atk) {
+      const damage = defender.atk - attacker.atk;
+      attackerField.splice(attackerField.indexOf(attacker), 1);
+      if (attackerIsPlayer) {
+        playerLP = Math.max(0, playerLP - damage);
+        log(`Você perdeu o ataque e recebeu ${damage} de dano.`);
+      } else {
+        enemyLP = Math.max(0, enemyLP - damage);
+        log(`Inimigo perdeu o ataque e recebeu ${damage} de dano.`);
+      }
+    } else {
+      defenderField.splice(defenderField.indexOf(defender), 1);
+      attackerField.splice(attackerField.indexOf(attacker), 1);
+      log("Empate! Ambas as cartas foram destruídas.");
+    }
+  }
 }
 
 function checkVictory() {
@@ -172,93 +267,14 @@ function checkVictory() {
   return false;
 }
 
-function executeAttack(attacker, defender, attackerField, defenderField, attackerIsPlayer) {
-  if (!defender) {
-    // ataque direto
-    if (attackerIsPlayer) {
-      enemyLP -= attacker.atk;
-      enemyLP = Math.max(enemyLP, 0);
-      log(`Você atacou diretamente e causou ${attacker.atk} de dano.`);
-    } else {
-      playerLP -= attacker.atk;
-      playerLP = Math.max(playerLP, 0);
-      log(`Inimigo atacou diretamente e causou ${attacker.atk} de dano.`);
-    }
-  } else {
-    // ataque contra carta
-    if (defender.mode === "defense") {
-      // Carta defensiva — dano é ao LD do atacante se perder
-      if (attacker.atk > defender.def) {
-        let damage = attacker.atk - defender.def;
-        defenderField.splice(defenderField.indexOf(defender), 1);
-        if (attackerIsPlayer) {
-          enemyLP -= damage;
-          enemyLP = Math.max(enemyLP, 0);
-          log(`Você destruiu ${defender.name} em defesa e causou ${damage} de dano ao oponente.`);
-        } else {
-          playerLP -= damage;
-          playerLP = Math.max(playerLP, 0);
-          log(`Inimigo destruiu ${defender.name} em defesa e causou ${damage} de dano a você.`);
-        }
-      } else if (attacker.atk < defender.def) {
-        let damage = defender.def - attacker.atk;
-        if (attackerIsPlayer) {
-          playerLP -= damage;
-          playerLP = Math.max(playerLP, 0);
-          attackerField.splice(attackerField.indexOf(attacker), 1);
-          log(`Seu ataque falhou contra a defesa. Você perdeu a carta e recebeu ${damage} de dano.`);
-        } else {
-          enemyLP -= damage;
-          enemyLP = Math.max(enemyLP, 0);
-          attackerField.splice(attackerField.indexOf(attacker), 1);
-          log(`Inimigo falhou no ataque e recebeu ${damage} de dano.`);
-        }
-      } else {
-        // empate
-        defenderField.splice(defenderField.indexOf(defender), 1);
-        attackerField.splice(attackerField.indexOf(attacker), 1);
-        log(`Ambas as cartas foram destruídas em defesa.`);
-      }
-    } else {
-      // defender modo ataque (modo clássico)
-      if (attacker.atk > defender.atk) {
-        let damage = attacker.atk - defender.atk;
-        defenderField.splice(defenderField.indexOf(defender), 1);
-        if (attackerIsPlayer) {
-          enemyLP -= damage;
-          enemyLP = Math.max(enemyLP, 0);
-          log(`Você atacou ${defender.name} e causou ${damage} de dano.`);
-        } else {
-          playerLP -= damage;
-          playerLP = Math.max(playerLP, 0);
-          log(`Inimigo atacou ${defender.name} e causou ${damage} de dano.`);
-        }
-      } else if (attacker.atk < defender.atk) {
-        let damage = defender.atk - attacker.atk;
-        attackerField.splice(attackerField.indexOf(attacker), 1);
-        if (attackerIsPlayer) {
-          playerLP -= damage;
-          playerLP = Math.max(playerLP, 0);
-          log(`Você atacou mas perdeu e recebeu ${damage} de dano.`);
-        } else {
-          enemyLP -= damage;
-          enemyLP = Math.max(enemyLP, 0);
-          log(`Inimigo atacou mas perdeu e recebeu ${damage} de dano.`);
-        }
-      } else {
-        // empate
-        defenderField.splice(defenderField.indexOf(defender), 1);
-        attackerField.splice(attackerField.indexOf(attacker), 1);
-        log(`Ambas as cartas foram destruídas.`);
-      }
-    }
-  }
-}
+// -----------------------------
+// Turnos e ações
+// -----------------------------
 
 async function enemyTurn() {
   log("Turno do inimigo...");
-  drawCard(enemyHand, enemyDeck);
-  playCard(enemyHand, enemyField);
+  drawCard(enemyHand, enemyDeck, false);
+  playCard(enemyHand, enemyField, false);
   renderField(enemyField, enemyFieldDiv, true);
   updateLP();
 
@@ -272,81 +288,93 @@ async function enemyTurn() {
   renderField(enemyField, enemyFieldDiv, true);
   updateLP();
 
-  if (checkVictory()) return;
-
-  currentTurn = 'player';
-  enableButtons();
-  log("Seu turno! Compre uma carta ou ataque.");
+  if (!checkVictory()) {
+    currentTurn = 'player';
+    enableButtons();
+    log("Seu turno! Compre uma carta ou ataque.");
+  }
 }
 
-// Eventos dos botões
+passTurnBtn.onclick = () => {
+  if (currentTurn !== 'player') return;
+
+  disableButtons();
+  currentTurn = 'enemy';
+  log("Turno inimigo...");
+
+  setTimeout(enemyTurn, 500);
+};
 
 drawCardBtn.onclick = () => {
-  if (currentTurn !== 'player') {
-    log("Não é seu turno!");
-    return;
-  }
-  if (drawCard(playerHand, playerDeck)) {
-    log("Você comprou uma carta.");
-    if (playCard(playerHand, playerField)) {
-      log("Você posicionou uma carta no campo.");
+  if (currentTurn !== 'player') return;
+  if (drawCard(playerHand, playerDeck, true)) {
+    if (playCard(playerHand, playerField, true)) {
       renderField(playerField, playerFieldDiv, false);
     }
-  } else {
-    log("Não foi possível comprar carta (mão cheia ou deck vazio).");
   }
 };
 
 attackBtn.onclick = () => {
-  if (currentTurn !== 'player') {
-    log("Não é seu turno!");
-    return;
-  }
-  if (selectedPlayerCardIndex === null) {
-    log("Selecione uma carta para atacar.");
-    return;
-  }
-  let card = playerField[selectedPlayerCardIndex];
-  card.mode = "attack"; // força modo ataque
+  if (currentTurn !== 'player' || selectedPlayerCardIndex === null) return;
+
+  const card = playerField[selectedPlayerCardIndex];
+  card.mode = "attack";
   attackModeActive = true;
-  log(`${card.name} está pronto para atacar. Clique em uma carta inimiga para atacar.`);
-  attackBtn.disabled = true;
-  defenseBtn.disabled = true;
+  log(`${card.name} está pronto para atacar. Selecione um inimigo.`);
+  disablePlayerActionButtons();
 };
 
 defenseBtn.onclick = () => {
-  if (currentTurn !== 'player') {
-    log("Não é seu turno!");
-    return;
-  }
-  if (selectedPlayerCardIndex === null) {
-    log("Selecione uma carta para mudar para defesa.");
-    return;
-  }
-  let card = playerField[selectedPlayerCardIndex];
+  if (currentTurn !== 'player' || selectedPlayerCardIndex === null) return;
+
+  const card = playerField[selectedPlayerCardIndex];
   card.mode = (card.mode === "defense") ? "attack" : "defense";
-  log(`${card.name} mudou para modo ${card.mode === "attack" ? "Ataque" : "Defesa"}.`);
-  renderField(playerField, playerFieldDiv, false);
-  attackBtn.disabled = true;
-  defenseBtn.disabled = true;
+  log(`${card.name} mudou para modo ${card.mode}.`);
   selectedPlayerCardIndex = null;
+  renderField(playerField, playerFieldDiv, false);
+  disablePlayerActionButtons();
 };
 
 discardCardBtn.onclick = () => {
-  if (currentTurn !== 'player') {
-    log("Não é seu turno!");
-    return;
-  }
-  if (selectedPlayerCardIndex === null) {
-    log("Selecione a carta do seu campo para descartar.");
-    return;
-  }
+  if (currentTurn !== 'player' || selectedPlayerCardIndex === null) return;
+
   const discarded = playerField.splice(selectedPlayerCardIndex, 1)[0];
   playerGraveyard.push(discarded);
-  log(`Você descartou a carta ${discarded.name} para o cemitério.`);
+  log(`Você descartou ${discarded.name}.`);
   selectedPlayerCardIndex = null;
   renderField(playerField, playerFieldDiv, false);
+  disablePlayerActionButtons();
 };
+
+function enablePlayerActionButtons() {
+  attackBtn.disabled = false;
+  defenseBtn.disabled = false;
+  discardCardBtn.disabled = false;
+}
+
+function disablePlayerActionButtons() {
+  attackBtn.disabled = true;
+  defenseBtn.disabled = true;
+  discardCardBtn.disabled = true;
+}
+
+function disableButtons() {
+  drawCardBtn.disabled = true;
+  disablePlayerActionButtons();
+  passTurnBtn.disabled = true;
+}
+
+function enableButtons() {
+  drawCardBtn.disabled = false;
+  passTurnBtn.disabled = false;
+  attackBtn.disabled = true;
+  defenseBtn.disabled = true;
+  discardCardBtn.disabled = true;
+}
+
+// -----------------------------
+// Inicialização do jogo
+// -----------------------------
 
 async function startGame() {
   log("Carregando cartas...");
@@ -356,16 +384,24 @@ async function startGame() {
     deck = data.data;
     shuffle(deck);
 
+    // Dividir deck entre jogador e inimigo
     playerDeck = deck.slice(0, Math.floor(deck.length / 2));
     enemyDeck = deck.slice(Math.floor(deck.length / 2));
 
+    playerDeckCount = playerDeck.length;
+    enemyDeckCount = enemyDeck.length;
+
+    updateDeckCount();
+
+    // Comprar 5 cartas para cada
     for (let i = 0; i < 5; i++) {
-      drawCard(playerHand, playerDeck);
-      drawCard(enemyHand, enemyDeck);
+      drawCard(playerHand, playerDeck, true);
+      drawCard(enemyHand, enemyDeck, false);
     }
 
-    while (playCard(playerHand, playerField)) {}
-    while (playCard(enemyHand, enemyField)) {}
+    // Jogar cartas para o campo automaticamente enquanto possível
+    while (playCard(playerHand, playerField, true)) {}
+    while (playCard(enemyHand, enemyField, false)) {}
 
     renderField(playerField, playerFieldDiv, false);
     renderField(enemyField, enemyFieldDiv, true);
@@ -379,7 +415,7 @@ async function startGame() {
   }
 }
 
-// Inicializa a renderização e o jogo
+// Renderiza os campos e inicia o jogo
 renderField(enemyField, enemyFieldDiv, true);
 renderField(playerField, playerFieldDiv, false);
 startGame();
