@@ -1,10 +1,13 @@
 {
+  "type": "module",
+  
   "name": "yu-gi-oh!-dio",
   "version": "1.0.0",
   "description": "",
   "main": "index multplay.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
