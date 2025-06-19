@@ -1,7 +1,8 @@
 // static/js/network.js
 
-import { state, log, renderField, DOM, enableButtons, disableButtons } from './state.js';
-import { renderField as render } from './render.js';
+import { state } from './state.js';
+import { log, disableButtons, enableButtons } from './utils.js';
+import { renderField } from './render.js';
 import { enemyTurn } from './events.js';
 
 import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
@@ -9,9 +10,11 @@ import { io } from "https://cdn.socket.io/4.7.2/socket.io.esm.min.js";
 let socket;
 let roomId;
 
+const enemyFieldDiv = document.getElementById("enemy-field");
+
 export function initSocket(onConnected) {
   roomId = prompt("Digite o código da sala:");
-  socket = io("http://localhost:3000"); // Ajuste URL do seu servidor
+  socket = io("http://localhost:3000");
 
   socket.on('connect', () => {
     log(`Conectado ao servidor. Entrando na sala: ${roomId}`);
@@ -23,20 +26,15 @@ export function initSocket(onConnected) {
     onConnected();
   });
 
-  // Quando o oponente jogar uma carta
   socket.on('opponent-played-card', (card) => {
     log(`Oponente jogou ${card.name}`);
-    // Atualiza campo inimigo
     state.enemyField.push(card);
-    render(state.enemyField, DOM.enemyFieldDiv, true);
+    renderField(state.enemyField, enemyFieldDiv, true);
   });
 
-  // Quando o oponente atacar
   socket.on('opponent-attack', (attackData) => {
-    // attackData deve conter info dos cards envolvidos
-    // Atualize o estado e campos conforme necessário
     log('Oponente atacou!');
-    // Pode chamar enemyTurn ou outra lógica para atualizar
+    // Aqui você pode processar o ataque se necessário
   });
 
   socket.on('disconnect', () => {

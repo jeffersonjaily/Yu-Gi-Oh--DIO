@@ -1,26 +1,37 @@
-// static/js/main.js
-
 import { startSinglePlayerGame } from './gameLogic.js';
-import { renderField } from './render.js';
-import { DOM } from './state.js';
 import { initSocket } from './network.js';
+import { DOM } from './constants.js';
+import { renderField } from './render.js';
 
-// Limpa e renderiza os campos vazios inicialmente
-renderField([], DOM.enemyFieldDiv, true);
-renderField([], DOM.playerFieldDiv, false);
+// Referências DOM
+const modeSelectDiv = document.getElementById('mode-select');
+const gameContainerDiv = document.getElementById('game-container');
+const btnSingle = document.getElementById('btn-single');
+const btnMulti = document.getElementById('btn-multi');
 
-async function startGame() {
-  const modo = prompt("Digite 1 para Single Player ou 2 para Multiplayer:");
-
-  if (modo === "2") {
-    // Multiplayer: inicia socket e depois o jogo multiplayer
-    initSocket(() => {
-      startSinglePlayerGame(false); // falso = multiplayer
-    });
-  } else {
-    // Single Player contra IA
-    startSinglePlayerGame(true);  // true = singleplayer/IA
-  }
+function initGameUI() {
+  renderField([], DOM.enemyFieldDiv, true);
+  renderField([], DOM.playerFieldDiv, false);
 }
 
-startGame();
+// Iniciar jogo Single Player
+btnSingle.onclick = () => {
+  modeSelectDiv.style.display = 'none';
+  gameContainerDiv.style.display = 'block';
+  initGameUI();
+  startSinglePlayerGame(true);
+};
+
+// Iniciar jogo Multiplayer
+btnMulti.onclick = () => {
+  modeSelectDiv.style.display = 'none';
+  gameContainerDiv.style.display = 'block';
+  initGameUI();
+  initSocket(() => {
+    startSinglePlayerGame(false);
+  });
+};
+
+// Caso queira iniciar direto no modo single player, pode usar:
+// initGameUI();
+// startSinglePlayerGame(true);

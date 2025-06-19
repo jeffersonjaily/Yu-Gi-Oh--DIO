@@ -4,7 +4,6 @@ import { state } from './state.js';
 import { DOM } from './constants.js';
 import {
   log,
-  zoomCard,
   enablePlayerActionButtons,
   disablePlayerActionButtons,
   updateLP,

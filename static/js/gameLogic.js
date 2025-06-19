@@ -1,6 +1,9 @@
 // static/js/gameLogic.js
 
-import { state, log, updateLP, renderField, DOM, enableButtons, disableButtons } from './state.js';
+import { state } from './state.js';
+import { log, updateLP, enableButtons, disableButtons } from './utils.js';
+import { renderField } from './render.js';
+import { DOM } from './constants.js';
 import { drawCard, playCard, executeAttack, checkVictory } from './play.js';
 import { enemyTurn } from './events.js';
 import { sendPlayCard, sendAttack } from './network.js';
@@ -9,7 +12,7 @@ export async function startSinglePlayerGame(isSinglePlayer = true) {
   log("Carregando cartas...");
 
   try {
-    const response = await fetch(state.API);
+    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?type=normal%20monster');
     const data = await response.json();
 
     state.deck = data.data;
@@ -31,8 +34,8 @@ export async function startSinglePlayerGame(isSinglePlayer = true) {
     }
 
     // Jogar cartas automaticamente no campo enquanto possível
-    while (playCard(state.playerHand, state.playerField, true)) { }
-    while (playCard(state.enemyHand, state.enemyField, false)) { }
+    while (playCard(state.playerHand, state.playerField, true)) {}
+    while (playCard(state.enemyHand, state.enemyField, false)) {}
 
     renderField(state.playerField, DOM.playerFieldDiv, false);
     renderField(state.enemyField, DOM.enemyFieldDiv, true);
@@ -43,7 +46,6 @@ export async function startSinglePlayerGame(isSinglePlayer = true) {
     enableButtons();
 
     if (!isSinglePlayer) {
-      // No multiplayer, aguarda ações via rede
       disableButtons();
       log("Esperando oponente...");
     }
@@ -53,8 +55,7 @@ export async function startSinglePlayerGame(isSinglePlayer = true) {
   }
 }
 
-// Modifique os eventos de jogar carta, ataque e etc para enviar via rede se multiplayer
-
+// Modo multiplayer
 export function jogarCartaMultiplayer(card) {
   playCard(state.playerHand, state.playerField, true);
   renderField(state.playerField, DOM.playerFieldDiv, false);
@@ -70,8 +71,7 @@ export function atacarMultiplayer(attackData) {
   log("Você realizou um ataque.");
 }
 
-// Inclua outras funções específicas para IA, multiplayer, etc.
-
+// Embaralhar deck
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -79,6 +79,7 @@ function shuffle(array) {
   }
 }
 
+// Atualiza contadores de cartas
 function updateDeckCount() {
   DOM.playerDeckCountElem.textContent = state.playerDeckCount;
   DOM.enemyDeckCountElem.textContent = state.enemyDeckCount;
