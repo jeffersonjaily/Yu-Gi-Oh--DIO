@@ -50,6 +50,45 @@ let attackModeActive = false;
 // -----------------------------
 // Funções auxiliares
 // -----------------------------
+function tryFusion(selectedIndexes) {
+  if (selectedIndexes.length !== 2) {
+    log("Selecione exatamente duas cartas para fusão.");
+    return false;
+  }
+
+  const card1 = playerField[selectedIndexes[0]];
+  const card2 = playerField[selectedIndexes[1]];
+
+  if (!card1 || !card2) {
+    log("Cartas inválidas para fusão.");
+    return false;
+  }
+
+  // Tenta encontrar uma receita que combine os dois nomes (ordem indiferente)
+  const fusion = fusionRecipes.find(recipe => {
+    const comps = recipe.components;
+    return (comps.includes(card1.name) && comps.includes(card2.name));
+  });
+
+  if (!fusion) {
+    log("Fusão inválida para essas cartas.");
+    return false;
+  }
+
+  // Remove as cartas do campo (comece pelo maior índice para evitar bugs)
+  const sortedIndexes = selectedIndexes.slice().sort((a,b) => b - a);
+  sortedIndexes.forEach(i => playerField.splice(i, 1));
+
+  // Adiciona a carta fusão no campo
+  playerField.push(fusion.result);
+
+  log(`Fusão realizada! Você criou ${fusion.result.name}.`);
+
+  renderField(playerField, playerFieldDiv, false);
+  disablePlayerActionButtons();
+
+  return true;
+}
 
 // Log no console do jogo
 function log(text) {
