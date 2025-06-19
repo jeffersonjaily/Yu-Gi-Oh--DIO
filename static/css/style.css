@@ -5,6 +5,14 @@
     padding: 0;
   }
 
+  /* Destaque para carta selecionada */
+.selected {
+  border: 3px solid gold;
+  box-shadow: 0 0 10px 3px gold;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
   /* Variáveis de cores */
   :root {
     --gold-light: #ffd54f;

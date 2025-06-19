@@ -1,25 +1,26 @@
+// static/js/main.js
+
+import { startSinglePlayerGame } from './gameLogic.js';
+import { renderField } from './render.js';
+import { DOM } from './state.js';
+import { initSocket } from './network.js';
+
+// Limpa e renderiza os campos vazios inicialmente
+renderField([], DOM.enemyFieldDiv, true);
+renderField([], DOM.playerFieldDiv, false);
+
 async function startGame() {
-  log("Carregando cartas...");
-  try {
-    await loadDeck();
-    playerDeck = deck.slice(0, deck.length / 2);
-    enemyDeck = deck.slice(deck.length / 2);
-    playerDeckCount = playerDeck.length;
-    enemyDeckCount = enemyDeck.length;
-    updateDeckCount();
-    for (let i = 0; i < 5; i++) {
-      drawCard(playerHand, playerDeck, true);
-      drawCard(enemyHand, enemyDeck, false);
-    }
-    while (playCard(playerHand, playerField, true)) {}
-    while (playCard(enemyHand, enemyField, false)) {}
-    renderField(playerField, playerFieldDiv, false);
-    renderField(enemyField, enemyFieldDiv, true);
-    updateLP();
-    log("Jogo iniciado! Seu turno.");
-    enableButtons();
-  } catch (e) {
-    log("Erro ao carregar cartas.");
+  const modo = prompt("Digite 1 para Single Player ou 2 para Multiplayer:");
+
+  if (modo === "2") {
+    // Multiplayer: inicia socket e depois o jogo multiplayer
+    initSocket(() => {
+      startSinglePlayerGame(false); // falso = multiplayer
+    });
+  } else {
+    // Single Player contra IA
+    startSinglePlayerGame(true);  // true = singleplayer/IA
   }
 }
+
 startGame();
