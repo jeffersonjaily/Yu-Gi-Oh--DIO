@@ -24,9 +24,16 @@
     --text-shadow-dark: rgba(0, 0, 0, 0.7);
   }
 
+
 body {
-  background-image: url('../img/backgroud.png');
+  background: url('../img/backgroud.png') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
+
 
 
   /* Overlay escuro para contraste */
@@ -343,3 +350,160 @@ body {
   font-family: "Courier New", monospace;
   box-shadow: 0 0 10px var(--gold-glow-strong);
 }
+/* Botões padrão estilo RPGUI dourado */
+button, .btn {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+  box-shadow: 0 4px 8px rgba(255, 183, 0, 0.4);
+  border-radius: 14px;
+  border: none;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 12px 25px;
+  margin-top: 15px;
+  color: #3e2723;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+  display: inline-block;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+button:hover, .btn:hover {
+  background: linear-gradient(135deg, #fff176, #fbc02d);
+  box-shadow: 0 6px 12px var(--gold-glow-strong);
+  color: #212121;
+}
+
+/* Campo input e labels para combinar */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"] {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 15px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 2px solid var(--gold-light);
+  background-color: rgba(30, 30, 30, 0.7);
+  color: var(--gold-light);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus {
+  border-color: var(--gold-glow-strong);
+  box-shadow: 0 0 8px var(--gold-glow-strong);
+}
+
+/* Container geral do formulário */
+.form-container {
+  background: rgba(10, 10, 10, 0.7);
+  padding: 25px 35px;
+  border-radius: 16px;
+  max-width: 360px;
+  margin: 40px auto;
+  box-shadow: 0 0 25px 8px var(--gold-glow);
+  color: var(--gold-light);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+}
+
+/* Mensagens de feedback */
+.message {
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  min-height: 24px;
+}
+
+.message.error {
+  color: #f44336;
+  text-shadow: 0 0 4px #b71c1c;
+}
+
+.message.success {
+  color: #4caf50;
+  text-shadow: 0 0 4px #1b5e20;
+}
+
+/* Label para inputs */
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: left;
+  color: var(--gold-light);
+  text-shadow: 0 0 6px var(--gold-glow);
+}
+
+/* Estilo para centralizar o formulário */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* ocupa altura total da tela */
+  padding: 20px;
+}
+
+form {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px var(--gold-glow);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  max-width: 400px;
+}
+
+form input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+form button {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+  color: #3e2723;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+form button:hover {
+  background: linear-gradient(135deg, #fff176, #fbc02d);
+  color: #212121;
+}
+main h1 {
+  font-size: 2.4rem;
+  margin-bottom: 30px;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px var(--gold-dark);
+  text-align: center;
+}
+
+main p {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1.5rem;
+  color: gold; /* Amarelo dourado */
+  text-shadow: 0 0 10px #FFD700, 0 0 20px #FFA500; /* Efeito de brilho */
+  font-weight: bold; /* Negrito para destacar */
+  font-size: 20px; /* Ajuste o tamanho conforme necessário */
+  text-decoration:

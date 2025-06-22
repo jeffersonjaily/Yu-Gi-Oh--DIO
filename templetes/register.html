@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro - Yu-Gi-Oh! DIO</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="form-container">
+    <h2>Cadastrar Usuário</h2>
+    <form id="register-form">
+      <label for="nick">Nick de Usuário</label>
+      <input type="text" id="nick" name="nick" required minlength="3" maxlength="20" />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="password">Senha (mín 8 caracteres, letras e números)</label>
+      <input type="password" id="password" name="password" required minlength="8" />
+
+      <label for="birthdate">Data de Nascimento</label>
+      <input type="date" id="birthdate" name="birthdate" required />
+
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <p class="message" id="msg"></p>
+
+    <p><a href="login.html" id="btn-login" class="btn">Já tenho conta</a></p>
+  </div>
+
+  <script>
+    const form = document.getElementById('register-form');
+    const msg = document.getElementById('msg');
+    const btnLogin = document.getElementById('btn-login');
+
+    btnLogin.addEventListener('click', () => {
+      window.location.href = '/login';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nick = form.nick.value.trim();
+      const email = form.email.value.trim();
+      const password = form.password.value.trim();
+      const birthdate = form.birthdate.value;
+
+      // Validações simples front-end
+      if (!nick || !email || !password || !birthdate) {
+        msg.textContent = 'Por favor, preencha todos os campos.';
+        msg.className = 'message error';
+        return;
+      }
+
+      // Validação senha (letras + números)
+      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+      if (!passRegex.test(password)) {
+        msg.textContent = 'Senha deve ter pelo menos 8 caracteres, letras e números.';
+        msg.className = 'message error';
+        return;
+      }
+
+      // Enviar dados para backend (API /api/auth/register)
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: nick, email, password, birthdate })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          msg.textContent = data.error || 'Erro ao cadastrar.';
+          msg.className = 'message error';
+          return;
+        }
+
+        msg.textContent = 'Cadastro realizado com sucesso! Redirecionando para login...';
+        msg.className = 'message success';
+
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+
+      } catch (error) {
+        msg.textContent = 'Erro na comunicação com o servidor.';
+        msg.className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>

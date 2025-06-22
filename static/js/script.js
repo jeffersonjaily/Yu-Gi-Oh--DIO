@@ -1,4 +1,4 @@
-// Constantes e elementos DOM
+// constants e elements DOM
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php?type=normal%20monster';
 
 const playerFieldDiv = document.getElementById("player-field");
@@ -22,9 +22,9 @@ const passTurnBtn = document.getElementById("pass-turn");
 const MAX_HAND_SIZE = 5;
 const MAX_FIELD_SIZE = 5;
 const MAX_LP = 8000;
-const cardBackImage = 'static/img/fundo-cartas.jpg';
+const cardBackImage = '/static/img/fundo-cartas.jpg';
 
-// Variáveis de estado do jogo
+// variates de escudo do jogo
 let deck = [];
 let playerDeck = [];
 let enemyDeck = [];
@@ -79,10 +79,10 @@ function tryFusion(selectedIndexes) {
   const sortedIndexes = selectedIndexes.slice().sort((a,b) => b - a);
   sortedIndexes.forEach(i => playerField.splice(i, 1));
 
-  // Adiciona a carta fusão no campo
+  // alicia a cart fusão no campo
   playerField.push(fusion.result);
 
-  log(`Fusão realizada! Você criou ${fusion.result.name}.`);
+  log(`fuse realizada! Você criou ${fusion.result.name}.`);
 
   renderField(playerField, playerFieldDiv, false);
   disablePlayerActionButtons();
@@ -90,7 +90,7 @@ function tryFusion(selectedIndexes) {
   return true;
 }
 
-// Log no console do jogo
+// Log no console do jodo
 function log(text) {
   logElem.textContent = text;
 }
@@ -233,13 +233,13 @@ function renderField(field, container, isEnemy = false) {
   });
 }
 
-// Executa o ataque entre cartas ou ataque direto
+// Executa o ataque entre cartas ou opaque direto
 function executeAttack(attacker, defender, attackerField, defenderField, attackerIsPlayer) {
   if (!defender) {
     const damage = attacker.atk;
     if (attackerIsPlayer) {
       enemyLP = Math.max(0, enemyLP - damage);
-      log(`Você atacou diretamente e causou ${damage} de dano.`);
+      log(`Você atacou diretamente e caus ${damage} de dano.`);
     } else {
       playerLP = Math.max(0, playerLP - damage);
       log(`Inimigo atacou diretamente e causou ${damage} de dano.`);
@@ -253,7 +253,7 @@ function executeAttack(attacker, defender, attackerField, defenderField, attacke
       defenderField.splice(defenderField.indexOf(defender), 1);
       if (attackerIsPlayer) {
         enemyLP = Math.max(0, enemyLP - damage);
-        log(`Você destruiu ${defender.name} em defesa e causou ${damage} de dano.`);
+        log(`Você destruiu ${defender.name} em defesa e causou ${damage} de dado.`);
       } else {
         playerLP = Math.max(0, playerLP - damage);
         log(`Inimigo destruiu ${defender.name} em defesa e causou ${damage} de dano.`);

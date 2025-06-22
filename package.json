@@ -1,6 +1,5 @@
 {
   "type": "module",
-  
   "name": "yu-gi-oh!-dio",
   "version": "1.0.0",
   "description": "",
@@ -16,13 +15,18 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/jeffersonjaily/Yu-Gi-Oh--DIO/issues"
   },
   "homepage": "https://github.com/jeffersonjaily/Yu-Gi-Oh--DIO#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "socket.io": "^4.8.1"
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.2",
+    "socket.io": "^4.8.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   }
 }
